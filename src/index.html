@@ -1,566 +1,581 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Voice Recorder</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Recorder</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  body {
-    background: #0e0e0e;
-    color: #e8e8e8;
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 0;
-  }
+    body {
+      background: #0e0e0e;
+      color: #e8e8e8;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 0;
+    }
 
-  .recorder {
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 4px;
-    padding: 40px 48px;
-    width: 380px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
+    .recorder {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 40px 48px;
+      width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
 
-  .label {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: #555;
-    text-transform: uppercase;
-  }
+    .label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: #555;
+      text-transform: uppercase;
+    }
 
-  .timer {
-    font-size: 42px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: #e8e8e8;
-    line-height: 1;
-  }
+    .timer {
+      font-size: 42px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #e8e8e8;
+      line-height: 1;
+    }
 
-  .timer.recording { color: #ff4444; }
+    .timer.recording {
+      color: #ff4444;
+    }
 
-  .waveform {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    height: 40px;
-  }
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 40px;
+    }
 
-  .bar {
-    flex: 1;
-    background: #2a2a2a;
-    border-radius: 2px;
-    height: 4px;
-    transition: height 0.05s ease;
-  }
+    .bar {
+      flex: 1;
+      background: #2a2a2a;
+      border-radius: 2px;
+      height: 4px;
+      transition: height 0.05s ease;
+    }
 
-  .bar.active { background: #ff4444; }
+    .bar.active {
+      background: #ff4444;
+    }
 
-  .controls {
-    display: flex;
-    gap: 12px;
-  }
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
 
-  .btn {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #2a2a2a;
-    background: #1e1e1e;
-    color: #e8e8e8;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.15s;
-  }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #2a2a2a;
+      background: #1e1e1e;
+      color: #e8e8e8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
 
-  .btn:hover:not(:disabled) { background: #2a2a2a; border-color: #444; }
-  .btn:disabled { opacity: 0.3; cursor: default; }
+    .btn:hover:not(:disabled) {
+      background: #2a2a2a;
+      border-color: #444;
+    }
 
-  .btn.record { border-color: #ff4444; color: #ff4444; }
-  .btn.record:hover:not(:disabled) { background: #ff44440d; }
-  .btn.record.active { background: #ff4444; color: #0e0e0e; }
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
 
-  .mic-select {
-    width: 100%;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    color: #aaa;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 9px 10px;
-    border-radius: 2px;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    outline: none;
-    transition: border-color 0.15s;
-  }
+    .btn.record {
+      border-color: #ff4444;
+      color: #ff4444;
+    }
 
-  .mic-select:hover { border-color: #3a3a3a; color: #ccc; }
-  .mic-select:focus { border-color: #444; }
-  .mic-select:disabled { opacity: 0.4; cursor: default; }
-  .mic-select option { background: #1a1a1a; }
+    .btn.record:hover:not(:disabled) {
+      background: #ff44440d;
+    }
 
-  .recordings-panel {
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 4px;
-    padding: 24px 28px;
-    width: 380px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+    .btn.record.active {
+      background: #ff4444;
+      color: #0e0e0e;
+    }
 
-  .recordings-panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+    .mic-select {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #aaa;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 9px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      outline: none;
+      transition: border-color 0.15s;
+    }
 
-  .recordings-count { font-size: 10px; color: #333; }
+    .mic-select:hover {
+      border-color: #3a3a3a;
+      color: #ccc;
+    }
 
-  .recordings {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 220px;
-    overflow-y: auto;
-  }
+    .mic-select:focus {
+      border-color: #444;
+    }
 
-  .recordings::-webkit-scrollbar { width: 4px; }
-  .recordings::-webkit-scrollbar-track { background: #1a1a1a; }
-  .recordings::-webkit-scrollbar-thumb { background: #333; }
+    .mic-select:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
 
-  .recordings-empty { font-size: 10px; color: #333; padding: 8px 0; }
+    .mic-select option {
+      background: #1a1a1a;
+    }
 
-  .recording-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: #1a1a1a;
-    border: 1px solid #222;
-    border-radius: 2px;
-  }
+    .recordings-panel {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 24px 28px;
+      width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-  .recording-info { flex: 1; overflow: hidden; }
+    .recordings-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-  .recording-name {
-    font-size: 10px;
-    color: #888;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-  }
+    .recordings-count {
+      font-size: 10px;
+      color: #333;
+    }
 
-  .recording-meta { font-size: 9px; color: #444; margin-top: 2px; }
+    .recordings {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
 
-  .recording-actions { display: flex; gap: 6px; align-items: center; }
+    .recordings::-webkit-scrollbar {
+      width: 4px;
+    }
 
-  .save-btn {
-    font-size: 10px;
-    color: #aaa;
-    background: none;
-    border: 1px solid #333;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.08em;
-    border-radius: 2px;
-    transition: all 0.15s;
-  }
+    .recordings::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
 
-  .save-btn:hover { border-color: #555; color: #eee; }
-  .save-btn:disabled { opacity: 0.4; cursor: default; }
+    .recordings::-webkit-scrollbar-thumb {
+      background: #333;
+    }
 
-  .play-btn {
-    font-size: 10px;
-    color: #66cc88;
-    background: none;
-    border: 1px solid #2a4a35;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.08em;
-    border-radius: 2px;
-    transition: all 0.15s;
-  }
+    .recordings-empty {
+      font-size: 10px;
+      color: #333;
+      padding: 8px 0;
+    }
 
-  .play-btn:hover { border-color: #66cc88; }
+    .recording-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #1a1a1a;
+      border: 1px solid #222;
+      border-radius: 2px;
+    }
 
-  .delete-btn {
-    font-size: 11px;
-    color: #444;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 2px;
-    transition: color 0.15s;
-    line-height: 1;
-  }
+    .recording-info {
+      flex: 1;
+      overflow: hidden;
+    }
 
-  .delete-btn:hover { color: #ff4444; }
+    .recording-name {
+      font-size: 10px;
+      color: #888;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
 
-  .status { font-size: 10px; color: #555; min-height: 14px; }
-  .status.error { color: #ff6666; }
-  .status.ok { color: #66cc88; }
+    .recording-meta {
+      font-size: 9px;
+      color: #444;
+      margin-top: 2px;
+    }
 
-  .dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: #ff4444;
-    border-radius: 50%;
-    margin-right: 6px;
-    animation: blink 1s ease infinite;
-  }
+    .recording-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
+    .save-btn {
+      font-size: 10px;
+      color: #aaa;
+      background: none;
+      border: 1px solid #333;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.08em;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
 
-  .saved-path {
-    font-size: 9px;
-    color: #3a5a4a;
-    margin-top: 2px;
-    cursor: pointer;
-    text-decoration: underline;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-  }
+    .save-btn:hover {
+      border-color: #555;
+      color: #eee;
+    }
 
-  .saved-path:hover { color: #66cc88; }
-</style>
-<style>
-#intro {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: #0a0a0a;
-  z-index: 9999;
-  overflow: hidden;
-}
-#intro canvas {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-}
-#intro-text {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  color: white;
-  font-family: 'JetBrains Mono', monospace;
-  pointer-events: none;
-  white-space: nowrap;
-}
-#intro-text h1 {
-  font-size: 32px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
-}
-#intro-text p {
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  color: #888;
-}
-</style>
+    .save-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .play-btn {
+      font-size: 10px;
+      color: #66cc88;
+      background: none;
+      border: 1px solid #2a4a35;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.08em;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
+
+    .play-btn:hover {
+      border-color: #66cc88;
+    }
+
+    .delete-btn {
+      font-size: 11px;
+      color: #444;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 2px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .delete-btn:hover {
+      color: #ff4444;
+    }
+
+    .status {
+      font-size: 10px;
+      color: #555;
+      min-height: 14px;
+    }
+
+    .status.error {
+      color: #ff6666;
+    }
+
+    .status.ok {
+      color: #66cc88;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #ff4444;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: blink 1s ease infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.2;
+      }
+    }
+
+    .saved-path {
+      font-size: 9px;
+      color: #3a5a4a;
+      margin-top: 2px;
+      cursor: pointer;
+      text-decoration: underline;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .saved-path:hover {
+      color: #66cc88;
+    }
+
+    #intro {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    #intro canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #intro-text {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: white;
+      font-family: 'JetBrains Mono', monospace;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #intro-text h1 {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    #intro-text p {
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      color: #888;
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="intro">
-  <canvas id="introCanvas"></canvas>
-  <div id="intro-text">
-    <h1>Voice Recorder Pro</h1>
-    <p>Created by Asmodeus</p>
-  </div>
-</div>
-
-<div style="display:flex;flex-direction:column;gap:16px;align-items:center;">
-
-<div class="recorder">
-  <div>
-    <div class="label">Voice Recorder</div>
+  <div id="intro">
+    <canvas id="introCanvas"></canvas>
+    <div id="intro-text">
+      <h1>Voice Recorder Pro</h1>
+      <p>Created by Asmodeus</p>
+    </div>
   </div>
 
-  <div>
-    <div class="label" style="margin-bottom:6px;">Microphone</div>
-    <select class="mic-select" id="micSelect" onchange="onMicChange()">
-      <option value="">— select microphone —</option>
-    </select>
+  <div style="display:flex;flex-direction:column;gap:16px;align-items:center;">
+    <div class="recorder">
+      <div>
+        <div class="label">Voice Recorder</div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:6px;">Microphone</div>
+        <select class="mic-select" id="micSelect" onchange="onMicChange()">
+          <option value="">— select microphone —</option>
+        </select>
+      </div>
+      <div>
+        <div class="timer" id="timer">00:00</div>
+      </div>
+      <div class="waveform" id="waveform"></div>
+      <div class="controls">
+        <button class="btn record" id="recordBtn" onclick="toggleRecord()">● REC</button>
+        <button class="btn" id="stopBtn" onclick="stopRecording()" disabled>■ STOP</button>
+      </div>
+      <div class="status" id="status">Loading devices…</div>
+    </div>
+    <div class="recordings-panel">
+      <div class="recordings-panel-header">
+        <div class="label">Recordings</div>
+        <div class="recordings-count" id="recCount">0 files</div>
+      </div>
+      <div class="recordings" id="recordings">
+        <div class="recordings-empty" id="emptyMsg">No recordings yet.</div>
+      </div>
+    </div>
   </div>
 
-  <div>
-    <div class="timer" id="timer">00:00</div>
-  </div>
-
-  <div class="waveform" id="waveform"></div>
-
-  <div class="controls">
-    <button class="btn record" id="recordBtn" onclick="toggleRecord()">● REC</button>
-    <button class="btn" id="stopBtn" onclick="stopRecording()" disabled>■ STOP</button>
-  </div>
-
-  <div class="status" id="status">Loading devices…</div>
-</div>
-
-<div class="recordings-panel">
-  <div class="recordings-panel-header">
-    <div class="label">Recordings</div>
-    <div class="recordings-count" id="recCount">0 files</div>
-  </div>
-  <div class="recordings" id="recordings">
-    <div class="recordings-empty" id="emptyMsg">No recordings yet.</div>
-  </div>
-</div>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
-<script>
-  let mediaRecorder = null;
-  let chunks = [];
-  let timerInterval = null;
-  let seconds = 0;
-  let analyser = null;
-  let animFrame = null;
-  let audioCtx = null;
-  let count = 0;
-  let selectedDeviceId = null;
-
-  // Store blobs in memory for playback / re-save
-  const recordings = new Map(); // id -> { blob, name }
-
-  const NUM_BARS = 28;
-  const waveform = document.getElementById('waveform');
-  for (let i = 0; i < NUM_BARS; i++) {
-    const b = document.createElement('div');
-    b.className = 'bar';
-    b.id = `bar-${i}`;
-    waveform.appendChild(b);
-  }
-
-  // --- Mic enumeration ---
-  async function loadMics() {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true }).then(s => s.getTracks().forEach(t => t.stop()));
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const mics = devices.filter(d => d.kind === 'audioinput');
-      const sel = document.getElementById('micSelect');
-      sel.innerHTML = '';
-      mics.forEach((d, i) => {
-        const opt = document.createElement('option');
-        opt.value = d.deviceId;
-        opt.textContent = d.label || `Microphone ${i + 1}`;
-        sel.appendChild(opt);
-      });
-      selectedDeviceId = sel.value;
-      setStatus('Ready');
-    } catch (e) {
-      setStatus('Mic access denied', 'error');
-    }
-  }
-
-  function onMicChange() {
-    selectedDeviceId = document.getElementById('micSelect').value;
-  }
-
-  function setStatus(msg, cls = '') {
-    const s = document.getElementById('status');
-    s.textContent = msg;
-    s.className = 'status ' + cls;
-  }
-
-  function formatTime(s) {
-    const m = Math.floor(s / 60).toString().padStart(2, '0');
-    const ss = (s % 60).toString().padStart(2, '0');
-    return `${m}:${ss}`;
-  }
-
-  function animateBars() {
-    if (!analyser) return;
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(data);
-    const step = Math.floor(data.length / NUM_BARS);
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+  <script>
+    let mediaRecorder = null, chunks = [], timerInterval = null, seconds = 0;
+    let analyser = null, animFrame = null, audioCtx = null, count = 0, selectedDeviceId = null;
+    const recordings = new Map();
+    const NUM_BARS = 28;
+    const waveform = document.getElementById('waveform');
     for (let i = 0; i < NUM_BARS; i++) {
-      const val = data[i * step] / 255;
-      const h = Math.max(4, val * 38);
-      const bar = document.getElementById(`bar-${i}`);
-      bar.style.height = h + 'px';
-      bar.classList.toggle('active', val > 0.05);
+      const b = document.createElement('div');
+      b.className = 'bar'; b.id = `bar-${i}`;
+      waveform.appendChild(b);
     }
-    animFrame = requestAnimationFrame(animateBars);
-  }
-
-  function resetBars() {
-    for (let i = 0; i < NUM_BARS; i++) {
-      const bar = document.getElementById(`bar-${i}`);
-      bar.style.height = '4px';
-      bar.classList.remove('active');
+    async function loadMics() {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true }).then(s => s.getTracks().forEach(t => t.stop()));
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        const sel = document.getElementById('micSelect');
+        sel.innerHTML = '';
+        mics.forEach((d, i) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          opt.textContent = d.label || `Microphone ${i + 1}`;
+          sel.appendChild(opt);
+        });
+        selectedDeviceId = sel.value;
+        setStatus('Ready');
+      } catch (e) { setStatus('Mic access denied', 'error'); }
     }
-  }
-
-  async function toggleRecord() {
-    if (mediaRecorder && mediaRecorder.state === 'recording') return;
-    try {
-      const constraints = {
-        audio: {
-          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-          sampleRate: 48000,
-          channelCount: 2,
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
-        }
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-      audioCtx = new AudioContext({ sampleRate: 48000 });
-      const source = audioCtx.createMediaStreamSource(stream);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
-      source.connect(analyser);
-
-      const mimeTypes = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg'];
-      let mimeType = '';
-      for (const mt of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(mt)) { mimeType = mt; break; }
+    function onMicChange() { selectedDeviceId = document.getElementById('micSelect').value; }
+    function setStatus(msg, cls = '') { const s = document.getElementById('status'); s.textContent = msg; s.className = 'status ' + cls; }
+    function formatTime(s) { return `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; }
+    function animateBars() {
+      if (!analyser) return;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+      const step = Math.floor(data.length / NUM_BARS);
+      for (let i = 0; i < NUM_BARS; i++) {
+        const val = data[i * step] / 255;
+        const bar = document.getElementById(`bar-${i}`);
+        bar.style.height = Math.max(4, val * 38) + 'px';
+        bar.classList.toggle('active', val > 0.05);
       }
-
-      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 320000 } : { audioBitsPerSecond: 320000 });
-      chunks = [];
-
-      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        cancelAnimationFrame(animFrame);
-        resetBars();
-        if (audioCtx) { audioCtx.close(); audioCtx = null; }
-        await saveRecording();
-      };
-
-      mediaRecorder.start(100);
-      seconds = 0;
-      timerInterval = setInterval(() => {
-        seconds++;
-        document.getElementById('timer').textContent = formatTime(seconds);
-      }, 1000);
-
-      document.getElementById('timer').className = 'timer recording';
-      document.getElementById('recordBtn').classList.add('active');
-      document.getElementById('recordBtn').innerHTML = '<span class="dot"></span>REC';
-      document.getElementById('stopBtn').disabled = false;
-      document.getElementById('micSelect').disabled = true;
-      setStatus('Recording…');
-      animateBars();
-
-    } catch (e) {
-      setStatus('Mic access denied', 'error');
+      animFrame = requestAnimationFrame(animateBars);
     }
-  }
-
-  function stopRecording() {
-    if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
-    clearInterval(timerInterval);
-    mediaRecorder.stop();
-    document.getElementById('timer').className = 'timer';
-    document.getElementById('recordBtn').classList.remove('active');
-    document.getElementById('recordBtn').innerHTML = '● REC';
-    document.getElementById('stopBtn').disabled = true;
-    document.getElementById('micSelect').disabled = false;
-    setStatus('Processing…');
-  }
-
-  async function saveRecording() {
-    const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
-    try {
-      const arrayBuffer = await blob.arrayBuffer();
-      const audioCtxDec = new AudioContext();
-      const audioBuffer = await audioCtxDec.decodeAudioData(arrayBuffer);
-      audioCtxDec.close();
-      const mp3Blob = encodeToMp3(audioBuffer);
-      addRecording(mp3Blob, false);
-      setStatus('Ready to save ✓', 'ok');
-    } catch (e) {
-      console.error('MP3 encode error, falling back:', e);
-      addRecording(blob, true);
-      setStatus('Ready to save (webm) ✓', 'ok');
-    }
-  }
-
-  function encodeToMp3(audioBuffer) {
-    const channels = Math.min(audioBuffer.numberOfChannels, 2);
-    const sampleRate = audioBuffer.sampleRate;
-    const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 320);
-    const blockSize = 1152;
-    const mp3Data = [];
-    const left = audioBuffer.getChannelData(0);
-    const right = channels > 1 ? audioBuffer.getChannelData(1) : left;
-
-    const toInt16 = f32 => {
-      const i16 = new Int16Array(f32.length);
-      for (let i = 0; i < f32.length; i++) {
-        const s = Math.max(-1, Math.min(1, f32[i]));
-        i16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    function resetBars() {
+      for (let i = 0; i < NUM_BARS; i++) {
+        const bar = document.getElementById(`bar-${i}`);
+        bar.style.height = '4px'; bar.classList.remove('active');
       }
-      return i16;
-    };
-
-    const leftI16 = toInt16(left);
-    const rightI16 = channels > 1 ? toInt16(right) : leftI16;
-
-    for (let i = 0; i < leftI16.length; i += blockSize) {
-      const lChunk = leftI16.subarray(i, i + blockSize);
-      const rChunk = rightI16.subarray(i, i + blockSize);
-      const encoded = channels > 1 ? mp3enc.encodeBuffer(lChunk, rChunk) : mp3enc.encodeBuffer(lChunk);
-      if (encoded.length > 0) mp3Data.push(new Int8Array(encoded));
     }
-    const flushed = mp3enc.flush();
-    if (flushed.length > 0) mp3Data.push(new Int8Array(flushed));
-    return new Blob(mp3Data, { type: 'audio/mp3' });
-  }
-
-  function addRecording(blob, isWebm = false) {
-    count++;
-    const id = count;
-    const ext = isWebm ? 'webm' : 'mp3';
-    const name = `rec-${String(id).padStart(2,'0')}-${formatTime(seconds).replace(':','-')}.${ext}`;
-    const micLabel = document.getElementById('micSelect').options[document.getElementById('micSelect').selectedIndex]?.text || 'Unknown mic';
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const objectUrl = URL.createObjectURL(blob);
-
-    recordings.set(id, { blob, name, objectUrl });
-
-    document.getElementById('emptyMsg')?.remove();
-
-    const container = document.getElementById('recordings');
-    const item = document.createElement('div');
-    item.className = 'recording-item';
-    item.id = `rec-item-${id}`;
-    item.innerHTML = `
+    async function toggleRecord() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+            sampleRate: 48000, channelCount: 2,
+            echoCancellation: false, noiseSuppression: false, autoGainControl: false
+          }
+        });
+        audioCtx = new AudioContext({ sampleRate: 48000 });
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
+        source.connect(analyser);
+        const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg'];
+        let mimeType = '';
+        for (const mt of mimeTypes) { if (MediaRecorder.isTypeSupported(mt)) { mimeType = mt; break; } }
+        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 320000 } : { audioBitsPerSecond: 320000 });
+        chunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop());
+          cancelAnimationFrame(animFrame); resetBars();
+          if (audioCtx) { audioCtx.close(); audioCtx = null; }
+          await saveRecording();
+        };
+        mediaRecorder.start(100);
+        seconds = 0;
+        timerInterval = setInterval(() => { seconds++; document.getElementById('timer').textContent = formatTime(seconds); }, 1000);
+        document.getElementById('timer').className = 'timer recording';
+        document.getElementById('recordBtn').classList.add('active');
+        document.getElementById('recordBtn').innerHTML = '<span class="dot"></span>REC';
+        document.getElementById('stopBtn').disabled = false;
+        document.getElementById('micSelect').disabled = true;
+        setStatus('Recording…'); animateBars();
+      } catch (e) { setStatus('Mic access denied', 'error'); }
+    }
+    function stopRecording() {
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      clearInterval(timerInterval); mediaRecorder.stop();
+      document.getElementById('timer').className = 'timer';
+      document.getElementById('recordBtn').classList.remove('active');
+      document.getElementById('recordBtn').innerHTML = '● REC';
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('micSelect').disabled = false;
+      setStatus('Processing…');
+    }
+    async function saveRecording() {
+      const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
+      try {
+        const ab = await blob.arrayBuffer();
+        const dec = new AudioContext();
+        const buf = await dec.decodeAudioData(ab);
+        dec.close();
+        addRecording(encodeToMp3(buf), false);
+        setStatus('Ready to save ✓', 'ok');
+      } catch (e) { addRecording(blob, true); setStatus('Ready to save (webm) ✓', 'ok'); }
+    }
+    function encodeToMp3(audioBuffer) {
+      const ch = Math.min(audioBuffer.numberOfChannels, 2);
+      const sr = audioBuffer.sampleRate;
+      const enc = new lamejs.Mp3Encoder(ch, sr, 320);
+      const bsz = 1152, mp3 = [];
+      const toI16 = f => {
+        const a = new Int16Array(f.length);
+        for (let i = 0; i < f.length; i++) { const s = Math.max(-1, Math.min(1, f[i])); a[i] = s < 0 ? s * 0x8000 : s * 0x7fff; }
+        return a;
+      };
+      const L = toI16(audioBuffer.getChannelData(0));
+      const R = ch > 1 ? toI16(audioBuffer.getChannelData(1)) : L;
+      for (let i = 0; i < L.length; i += bsz) {
+        const encoded = ch > 1 ? enc.encodeBuffer(L.subarray(i, i + bsz), R.subarray(i, i + bsz)) : enc.encodeBuffer(L.subarray(i, i + bsz));
+        if (encoded.length > 0) mp3.push(new Int8Array(encoded));
+      }
+      const f = enc.flush(); if (f.length > 0) mp3.push(new Int8Array(f));
+      return new Blob(mp3, { type: 'audio/mp3' });
+    }
+    function addRecording(blob, isWebm = false) {
+      count++;
+      const id = count;
+      const ext = isWebm ? 'webm' : 'mp3';
+      const name = `rec-${String(id).padStart(2, '0')}-${formatTime(seconds).replace(':', '-')}.${ext}`;
+      const micLabel = document.getElementById('micSelect').options[document.getElementById('micSelect').selectedIndex]?.text || 'Unknown mic';
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const objectUrl = URL.createObjectURL(blob);
+      recordings.set(id, { blob, name, objectUrl });
+      document.getElementById('emptyMsg')?.remove();
+      const container = document.getElementById('recordings');
+      const item = document.createElement('div');
+      item.className = 'recording-item'; item.id = `rec-item-${id}`;
+      item.innerHTML = `
       <div class="recording-info">
         <span class="recording-name">${name}</span>
         <span class="recording-meta">${now} · ${micLabel}</span>
@@ -570,223 +585,235 @@
         <button class="play-btn" onclick="playRecording(${id})">▶ PLAY</button>
         <button class="save-btn" id="save-btn-${id}" onclick="saveToDisk(${id})">↓ SAVE</button>
         <button class="delete-btn" onclick="deleteRecording(${id})" title="Delete">✕</button>
-      </div>
-    `;
-    container.prepend(item);
-    updateCount();
-  }
-
-  async function saveToDisk(id) {
-    const rec = recordings.get(id);
-    if (!rec) return;
-
-    const btn = document.getElementById(`save-btn-${id}`);
-    btn.disabled = true;
-    btn.textContent = '…';
-
-    const arrayBuffer = await rec.blob.arrayBuffer();
-    const result = await window.electronAPI.saveRecording({
-      buffer: Array.from(new Uint8Array(arrayBuffer)),
-      suggestedName: rec.name,
-    });
-
-    if (result.success) {
-      btn.textContent = '✓ SAVED';
-      const pathEl = document.getElementById(`saved-path-${id}`);
-      if (pathEl) {
-        pathEl.style.display = 'block';
-        pathEl.textContent = result.filePath;
-        pathEl.onclick = () => window.electronAPI.showInFolder(result.filePath);
-      }
-    } else {
-      btn.disabled = false;
-      btn.textContent = '↓ SAVE';
+      </div>`;
+      container.prepend(item); updateCount();
     }
-  }
-
-  let currentAudio = null;
-  function playRecording(id) {
-    const rec = recordings.get(id);
-    if (!rec) return;
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    currentAudio = new Audio(rec.objectUrl);
-    currentAudio.play();
-  }
-
-  function deleteRecording(id) {
-    const rec = recordings.get(id);
-    if (rec) URL.revokeObjectURL(rec.objectUrl);
-    recordings.delete(id);
-    document.getElementById(`rec-item-${id}`)?.remove();
-    updateCount();
-    if (document.getElementById('recordings').children.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'recordings-empty';
-      empty.id = 'emptyMsg';
-      empty.textContent = 'No recordings yet.';
-      document.getElementById('recordings').appendChild(empty);
-    }
-  }
-  function updateCount() {
-    const n = document.querySelectorAll('.recording-item').length;
-    document.getElementById('recCount').textContent = `${n} file${n !== 1 ? 's' : ''}`;
-  }
-  loadMics();
-  navigator.mediaDevices.addEventListener('devicechange', loadMics);
-</script>
-<script>
-(function() {
-  const intro    = document.getElementById('intro');
-  const textEl   = document.getElementById('intro-text');
-  const canvas   = document.getElementById('introCanvas');
-  const ctx      = canvas.getContext('2d');
-  let W, H, landY, particles = [], phase = 'falling', phaseStart = 0;
-  let textY, textOpacity = 1, shakeX = 0, shakeY = 0;
-  let raf;
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    landY = H / 2 + 30;  
-  resize();
-  window.addEventListener('resize', resize);
-  class Particle {
-    constructor(x, y) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 9;
-      this.x  = x + (Math.random() - 0.5) * 120;
-      this.y  = y;
-      this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - (4 + Math.random() * 5); // upward burst
-      this.life = 1;
-      this.decay = 0.012 + Math.random() * 0.025;
-      this.size  = 2 + Math.random() * 5;
-      const palettes = ['255,255,255','255,80,80','200,200,200','255,200,100'];
-      this.color = palettes[Math.floor(Math.random() * palettes.length)];
-    }
-    update() {
-      this.vy += 0.35;         
-      this.vx *= 0.97;
-      this.x  += this.vx;
-      this.y  += this.vy;
-      this.life -= this.decay;
-    }
-    draw() {
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, this.life);
-      ctx.fillStyle = `rgb(${this.color})`;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, Math.max(0, this.size * this.life), 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-  let rings = [];
-  function spawnRings(cx, cy) {
-    for (let i = 0; i < 3; i++) {
-      rings.push({ x: cx, y: cy, r: 10, maxR: 180 + i * 60, life: 1, delay: i * 80 });
-    }
-  }
-  function spawnParticles(cx, cy) {
-    for (let i = 0; i < 180; i++) particles.push(new Particle(cx, cy));
-  }
-  let shakeDuration = 0, shakeDecay = 0;
-  function startShake() { shakeDuration = 600; shakeDecay = 0.92; }
-  let flashAlpha = 0;
-  function triggerFlash() { flashAlpha = 0.85; }
-  const FALL_DURATION   = 900;  
-  const PAUSE_DURATION  = 2200;  
-  const EXIT_DURATION   = 700;   
-
-  let crashDone = false;
-  let startTime = null;
-  function tick(now) {
-    if (!startTime) startTime = now;
-    const t = now - startTime;
-    if (shakeDuration > 0) {
-      const mag = 7 * (shakeDuration / 600);
-      shakeX = (Math.random() - 0.5) * mag;
-      shakeY = (Math.random() - 0.5) * mag;
-      shakeDuration -= 16;
-    } else { shakeX = 0; shakeY = 0; }
-    ctx.clearRect(0, 0, W, H);
-    if (flashAlpha > 0) {
-      ctx.save();
-      ctx.globalAlpha = flashAlpha;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, W, H);
-      ctx.restore();
-      flashAlpha *= 0.80;
-    }
-    ctx.save();
-    ctx.translate(shakeX, shakeY);
-    ctx.strokeStyle = 'rgba(80,80,80,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, landY + 28);
-    ctx.lineTo(W, landY + 28);
-    ctx.stroke();
-    ctx.restore();
-    rings = rings.filter(r => r.life > 0.02);
-    rings.forEach(r => {
-      if (r.delay > 0) { r.delay -= 16; return; }
-      r.r    = r.r + (r.maxR - r.r) * 0.07;
-      r.life *= 0.92;
-      ctx.save();
-      ctx.translate(shakeX, shakeY);
-      ctx.strokeStyle = `rgba(255,255,255,${r.life * 0.5})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(W / 2, landY + 28, r.r, r.r * 0.22, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    });
-    particles = particles.filter(p => p.life > 0);
-    particles.forEach(p => { p.update(); ctx.save(); ctx.translate(shakeX, shakeY); p.draw(); ctx.restore(); });
-    if (phase === 'falling') {
-      const progress = Math.min(t / FALL_DURATION, 1);
-      const eased = progress * progress * progress;
-      textY = -120 + eased * (landY + 120);
-      textOpacity = Math.min(1, progress * 3);
-
-      if (progress >= 1 && !crashDone) {
-        crashDone = true;
-        phase = 'paused';
-        phaseStart = now;
-        spawnParticles(W / 2, landY);
-        spawnRings(W / 2, landY);
-        triggerFlash();
-        startShake();
-      }
-    } else if (phase === 'paused') {
-      const pt = now - phaseStart;
-      const bounce = Math.sin(pt * 0.04) * Math.max(0, 1 - pt / 400) * 6;
-      textY = landY + bounce;
-      textOpacity = 1;
-      if (pt >= PAUSE_DURATION) { phase = 'exiting'; phaseStart = now; }
-    } else if (phase === 'exiting') {
-      const pt = now - phaseStart;
-      const progress = Math.min(pt / EXIT_DURATION, 1);
-      const eased = progress * progress;
-      textY = landY + eased * (H + 150);
-      textOpacity = Math.max(0, 1 - progress * 2);
-
-      if (progress >= 1) {
-        cancelAnimationFrame(raf);
-        intro.style.transition = 'opacity 0.4s ease';
-        intro.style.opacity = '0';
-        setTimeout(() => intro.remove(), 420);
-        return;
+    async function saveToDisk(id) {
+      const rec = recordings.get(id); if (!rec) return;
+      const btn = document.getElementById(`save-btn-${id}`);
+      btn.disabled = true; btn.textContent = '…';
+      // Try Electron API first, fall back to browser download
+      if (window.electronAPI) {
+        const arrayBuffer = await rec.blob.arrayBuffer();
+        const result = await window.electronAPI.saveRecording({
+          buffer: Array.from(new Uint8Array(arrayBuffer)),
+          suggestedName: rec.name,
+        });
+        if (result.success) {
+          btn.textContent = '✓ SAVED';
+          const pathEl = document.getElementById(`saved-path-${id}`);
+          if (pathEl) {
+            pathEl.style.display = 'block';
+            pathEl.textContent = result.filePath;
+            pathEl.onclick = () => window.electronAPI.showInFolder(result.filePath);
+          }
+        } else {
+          btn.disabled = false; btn.textContent = '↓ SAVE';
+        }
+      } else {
+        // Browser fallback
+        const a = document.createElement('a');
+        a.href = rec.objectUrl; a.download = rec.name; a.click();
+        btn.textContent = '✓ SAVED';
       }
     }
+    let currentAudio = null;
+    function playRecording(id) {
+      const rec = recordings.get(id); if (!rec) return;
+      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+      currentAudio = new Audio(rec.objectUrl); currentAudio.play();
+    }
+    function deleteRecording(id) {
+      const rec = recordings.get(id);
+      if (rec) URL.revokeObjectURL(rec.objectUrl);
+      recordings.delete(id);
+      document.getElementById(`rec-item-${id}`)?.remove();
+      updateCount();
+      if (document.getElementById('recordings').children.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'recordings-empty'; empty.id = 'emptyMsg'; empty.textContent = 'No recordings yet.';
+        document.getElementById('recordings').appendChild(empty);
+      }
+    }
+    function updateCount() { const n = document.querySelectorAll('.recording-item').length; document.getElementById('recCount').textContent = `${n} file${n !== 1 ? 's' : ''}`; }
+    loadMics();
+    navigator.mediaDevices.addEventListener('devicechange', loadMics);
+  </script>
 
-    textEl.style.top  = (textY - 40 + shakeY) + 'px';  
-    textEl.style.opacity = textOpacity;
+  <script>
+    (function () {
+      const intro = document.getElementById('intro');
+      const textEl = document.getElementById('intro-text');
+      const canvas = document.getElementById('introCanvas');
+      const ctx = canvas.getContext('2d');
 
-    raf = requestAnimationFrame(tick);
-  }
+      // ── state ───────────────────────────────────────────────────────────────
+      let W, H, landY;
+      let particles = [], rings = [];
+      let phase = 'falling', phaseStart = 0;
+      let textY = 0, textOpacity = 1;
+      let shakeX = 0, shakeY = 0, shakeDuration = 0;
+      let flashAlpha = 0;
+      let crashDone = false, startTime = null;
+      let raf;
 
-  raf = requestAnimationFrame(tick);
-})();
-</script>
+      // ── resize ──────────────────────────────────────────────────────────────
+      // FIX 1: resize() is now properly closed with its own closing brace.
+      // Previously the brace was missing, so everything below ran inside resize()
+      // and re-executed on every window resize event.
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        landY = H / 2 + 30;
+      }                                         // ← closing brace was missing
+      resize();
+      window.addEventListener('resize', resize);
+
+      // ── Particle ─────────────────────────────────────────────────────────────
+      class Particle {
+        constructor(x, y) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 9;
+          this.x = x + (Math.random() - 0.5) * 120;
+          this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - (4 + Math.random() * 5);
+          this.life = 1;
+          this.decay = 0.012 + Math.random() * 0.025;
+          this.size = 2 + Math.random() * 5;
+          const palettes = ['255,255,255', '255,80,80', '200,200,200', '255,200,100'];
+          this.color = palettes[Math.floor(Math.random() * palettes.length)];
+        }
+        update() {
+          this.vy += 0.35; this.vx *= 0.97;
+          this.x += this.vx; this.y += this.vy;
+          this.life -= this.decay;
+        }
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, this.life);
+          ctx.fillStyle = `rgb(${this.color})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, Math.max(0, this.size * this.life), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function spawnRings(cx, cy) {
+        for (let i = 0; i < 3; i++)
+          rings.push({ x: cx, y: cy, r: 10, maxR: 180 + i * 60, life: 1, delay: i * 80 });
+      }
+      function spawnParticles(cx, cy) {
+        for (let i = 0; i < 180; i++) particles.push(new Particle(cx, cy));
+      }
+      function startShake() { shakeDuration = 600; }
+      function triggerFlash() { flashAlpha = 0.85; }
+
+      const FALL_DURATION = 900;
+      const PAUSE_DURATION = 2200;
+      const EXIT_DURATION = 700;
+
+      // ── main loop ────────────────────────────────────────────────────────────
+      function tick(now) {
+        // FIX 2 & 3: startTime and textY are both initialised on the very first
+        // frame. Previously textY was declared as `let textY` (= undefined) and
+        // never assigned before use, causing NaN layout positions on frame 1.
+        if (!startTime) { startTime = now; textY = -120; }
+        const t = now - startTime;
+
+        // shake
+        if (shakeDuration > 0) {
+          const mag = 7 * (shakeDuration / 600);
+          shakeX = (Math.random() - 0.5) * mag;
+          shakeY = (Math.random() - 0.5) * mag;
+          shakeDuration -= 16;
+        } else { shakeX = 0; shakeY = 0; }
+
+        ctx.clearRect(0, 0, W, H);
+
+        // flash overlay
+        if (flashAlpha > 0) {
+          ctx.save();
+          ctx.globalAlpha = flashAlpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+          flashAlpha *= 0.80;
+        }
+
+        // ground line
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+        ctx.strokeStyle = 'rgba(80,80,80,0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, landY + 28); ctx.lineTo(W, landY + 28);
+        ctx.stroke();
+        ctx.restore();
+
+        // rings
+        rings = rings.filter(r => r.life > 0.02);
+        rings.forEach(r => {
+          if (r.delay > 0) { r.delay -= 16; return; }
+          r.r = r.r + (r.maxR - r.r) * 0.07;
+          r.life *= 0.92;
+          ctx.save();
+          ctx.translate(shakeX, shakeY);
+          ctx.strokeStyle = `rgba(255,255,255,${r.life * 0.5})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(W / 2, landY + 28, r.r, r.r * 0.22, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        // particles
+        particles = particles.filter(p => p.life > 0);
+        particles.forEach(p => {
+          p.update();
+          ctx.save(); ctx.translate(shakeX, shakeY); p.draw(); ctx.restore();
+        });
+
+        // phase logic
+        if (phase === 'falling') {
+          const progress = Math.min(t / FALL_DURATION, 1);
+          const eased = progress * progress * progress;
+          textY = -120 + eased * (landY + 120);
+          textOpacity = Math.min(1, progress * 3);
+          if (progress >= 1 && !crashDone) {
+            crashDone = true; phase = 'paused'; phaseStart = now;
+            spawnParticles(W / 2, landY); spawnRings(W / 2, landY);
+            triggerFlash(); startShake();
+          }
+        } else if (phase === 'paused') {
+          const pt = now - phaseStart;
+          const bounce = Math.sin(pt * 0.04) * Math.max(0, 1 - pt / 400) * 6;
+          textY = landY + bounce; textOpacity = 1;
+          if (pt >= PAUSE_DURATION) { phase = 'exiting'; phaseStart = now; }
+        } else if (phase === 'exiting') {
+          const pt = now - phaseStart;
+          const progress = Math.min(pt / EXIT_DURATION, 1);
+          const eased = progress * progress;
+          textY = landY + eased * (H + 150);
+          textOpacity = Math.max(0, 1 - progress * 2);
+          if (progress >= 1) {
+            cancelAnimationFrame(raf);
+            intro.style.transition = 'opacity 0.4s ease';
+            intro.style.opacity = '0';
+            setTimeout(() => intro.remove(), 420);
+            return;
+          }
+        }
+
+        textEl.style.top = (textY - 40 + shakeY) + 'px';
+        textEl.style.opacity = textOpacity;
+        raf = requestAnimationFrame(tick);
+      }
+
+      raf = requestAnimationFrame(tick);
+    })();
+  </script>
 </body>
+
 </html>
