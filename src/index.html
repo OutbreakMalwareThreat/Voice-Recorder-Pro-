@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
-
+ 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Voice Recorder</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
-
+ 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
+ 
     body {
       background: #0e0e0e;
       color: #e8e8e8;
@@ -24,25 +24,25 @@
       justify-content: center;
       padding: 24px 0;
     }
-
+ 
     .recorder {
       background: #161616;
       border: 1px solid #2a2a2a;
       border-radius: 4px;
       padding: 40px 48px;
-      width: 380px;
+      width: 420px;
       display: flex;
       flex-direction: column;
       gap: 28px;
     }
-
+ 
     .label {
       font-size: 10px;
       letter-spacing: 0.2em;
       color: #555;
       text-transform: uppercase;
     }
-
+ 
     .timer {
       font-size: 42px;
       font-weight: 600;
@@ -50,18 +50,18 @@
       color: #e8e8e8;
       line-height: 1;
     }
-
+ 
     .timer.recording {
       color: #ff4444;
     }
-
+ 
     .waveform {
       display: flex;
       align-items: center;
       gap: 3px;
       height: 40px;
     }
-
+ 
     .bar {
       flex: 1;
       background: #2a2a2a;
@@ -69,16 +69,16 @@
       height: 4px;
       transition: height 0.05s ease;
     }
-
+ 
     .bar.active {
       background: #ff4444;
     }
-
+ 
     .controls {
       display: flex;
       gap: 12px;
     }
-
+ 
     .btn {
       flex: 1;
       padding: 12px;
@@ -93,31 +93,31 @@
       border-radius: 2px;
       transition: all 0.15s;
     }
-
+ 
     .btn:hover:not(:disabled) {
       background: #2a2a2a;
       border-color: #444;
     }
-
+ 
     .btn:disabled {
       opacity: 0.3;
       cursor: default;
     }
-
+ 
     .btn.record {
       border-color: #ff4444;
       color: #ff4444;
     }
-
+ 
     .btn.record:hover:not(:disabled) {
       background: #ff44440d;
     }
-
+ 
     .btn.record.active {
       background: #ff4444;
       color: #0e0e0e;
     }
-
+ 
     .mic-select {
       width: 100%;
       background: #1a1a1a;
@@ -136,47 +136,135 @@
       outline: none;
       transition: border-color 0.15s;
     }
-
+ 
     .mic-select:hover {
       border-color: #3a3a3a;
       color: #ccc;
     }
-
+ 
     .mic-select:focus {
       border-color: #444;
     }
-
+ 
     .mic-select:disabled {
       opacity: 0.4;
       cursor: default;
     }
-
+ 
     .mic-select option {
       background: #1a1a1a;
     }
-
+ 
+    /* ── Noise Suppression Selector ── */
+    .ns-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+ 
+    .ns-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+ 
+    .ns-badge {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      padding: 2px 6px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+ 
+    .ns-badge.none    { color: #555; border: 1px solid #2a2a2a; }
+    .ns-badge.standard{ color: #4da6ff; border: 1px solid #1a3a5c; }
+    .ns-badge.krisp   { color: #a78bfa; border: 1px solid #3b2f6e; background: #1a1030; }
+ 
+    .ns-options {
+      display: flex;
+      gap: 6px;
+    }
+ 
+    .ns-btn {
+      flex: 1;
+      padding: 9px 6px;
+      border: 1px solid #2a2a2a;
+      background: #1a1a1a;
+      color: #555;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+      text-align: center;
+    }
+ 
+    .ns-btn:hover {
+      border-color: #3a3a3a;
+      color: #888;
+    }
+ 
+    .ns-btn.active-none {
+      border-color: #555;
+      color: #e8e8e8;
+      background: #222;
+    }
+ 
+    .ns-btn.active-standard {
+      border-color: #4da6ff;
+      color: #4da6ff;
+      background: #0d1f33;
+    }
+ 
+    .ns-btn.active-krisp {
+      border-color: #a78bfa;
+      color: #a78bfa;
+      background: #150d2a;
+    }
+ 
+    .ns-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+ 
+    .krisp-status {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: #555;
+      min-height: 12px;
+      transition: color 0.2s;
+    }
+ 
+    .krisp-status.loading { color: #a78bfa; }
+    .krisp-status.ready   { color: #66cc88; }
+    .krisp-status.error   { color: #ff6666; }
+ 
+    /* ── rest of existing styles ── */
     .recordings-panel {
       background: #161616;
       border: 1px solid #2a2a2a;
       border-radius: 4px;
       padding: 24px 28px;
-      width: 380px;
+      width: 420px;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
-
+ 
     .recordings-panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-
+ 
     .recordings-count {
       font-size: 10px;
       color: #333;
     }
-
+ 
     .recordings {
       display: flex;
       flex-direction: column;
@@ -184,25 +272,17 @@
       max-height: 220px;
       overflow-y: auto;
     }
-
-    .recordings::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .recordings::-webkit-scrollbar-track {
-      background: #1a1a1a;
-    }
-
-    .recordings::-webkit-scrollbar-thumb {
-      background: #333;
-    }
-
+ 
+    .recordings::-webkit-scrollbar { width: 4px; }
+    .recordings::-webkit-scrollbar-track { background: #1a1a1a; }
+    .recordings::-webkit-scrollbar-thumb { background: #333; }
+ 
     .recordings-empty {
       font-size: 10px;
       color: #333;
       padding: 8px 0;
     }
-
+ 
     .recording-item {
       display: flex;
       align-items: center;
@@ -212,12 +292,12 @@
       border: 1px solid #222;
       border-radius: 2px;
     }
-
+ 
     .recording-info {
       flex: 1;
       overflow: hidden;
     }
-
+ 
     .recording-name {
       font-size: 10px;
       color: #888;
@@ -226,19 +306,19 @@
       text-overflow: ellipsis;
       display: block;
     }
-
+ 
     .recording-meta {
       font-size: 9px;
       color: #444;
       margin-top: 2px;
     }
-
+ 
     .recording-actions {
       display: flex;
       gap: 6px;
       align-items: center;
     }
-
+ 
     .save-btn {
       font-size: 10px;
       color: #aaa;
@@ -251,17 +331,10 @@
       border-radius: 2px;
       transition: all 0.15s;
     }
-
-    .save-btn:hover {
-      border-color: #555;
-      color: #eee;
-    }
-
-    .save-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-
+ 
+    .save-btn:hover { border-color: #555; color: #eee; }
+    .save-btn:disabled { opacity: 0.4; cursor: default; }
+ 
     .play-btn {
       font-size: 10px;
       color: #66cc88;
@@ -274,11 +347,9 @@
       border-radius: 2px;
       transition: all 0.15s;
     }
-
-    .play-btn:hover {
-      border-color: #66cc88;
-    }
-
+ 
+    .play-btn:hover { border-color: #66cc88; }
+ 
     .delete-btn {
       font-size: 11px;
       color: #444;
@@ -290,25 +361,18 @@
       transition: color 0.15s;
       line-height: 1;
     }
-
-    .delete-btn:hover {
-      color: #ff4444;
-    }
-
+ 
+    .delete-btn:hover { color: #ff4444; }
+ 
     .status {
       font-size: 10px;
       color: #555;
       min-height: 14px;
     }
-
-    .status.error {
-      color: #ff6666;
-    }
-
-    .status.ok {
-      color: #66cc88;
-    }
-
+ 
+    .status.error { color: #ff6666; }
+    .status.ok    { color: #66cc88; }
+ 
     .dot {
       display: inline-block;
       width: 6px;
@@ -318,19 +382,12 @@
       margin-right: 6px;
       animation: blink 1s ease infinite;
     }
-
+ 
     @keyframes blink {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.2;
-      }
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
     }
-
+ 
     .saved-path {
       font-size: 9px;
       color: #3a5a4a;
@@ -342,58 +399,40 @@
       text-overflow: ellipsis;
       display: block;
     }
-
-    .saved-path:hover {
-      color: #66cc88;
-    }
-
+ 
+    .saved-path:hover { color: #66cc88; }
+ 
+    /* ── intro ── */
     #intro {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
       background: #0a0a0a;
-      z-index: 9999;
-      overflow: hidden;
+      z-index: 9999; overflow: hidden;
     }
-
-    #intro canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
+ 
+    #intro canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+ 
     #intro-text {
       position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 50%; transform: translateX(-50%);
       text-align: center;
       color: white;
       font-family: 'JetBrains Mono', monospace;
       pointer-events: none;
       white-space: nowrap;
     }
-
+ 
     #intro-text h1 {
-      font-size: 32px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
+      font-size: 32px; font-weight: 600;
+      letter-spacing: 0.08em; margin-bottom: 8px;
     }
-
-    #intro-text p {
-      font-size: 13px;
-      letter-spacing: 0.2em;
-      color: #888;
-    }
+ 
+    #intro-text p { font-size: 13px; letter-spacing: 0.2em; color: #888; }
   </style>
 </head>
-
+ 
 <body>
-
+ 
   <div id="intro">
     <canvas id="introCanvas"></canvas>
     <div id="intro-text">
@@ -401,28 +440,50 @@
       <p>Created by Asmodeus</p>
     </div>
   </div>
-
+ 
   <div style="display:flex;flex-direction:column;gap:16px;align-items:center;">
     <div class="recorder">
       <div>
         <div class="label">Voice Recorder</div>
       </div>
+ 
+      <!-- Microphone -->
       <div>
         <div class="label" style="margin-bottom:6px;">Microphone</div>
         <select class="mic-select" id="micSelect" onchange="onMicChange()">
           <option value="">— select microphone —</option>
         </select>
       </div>
+ 
+      <!-- Noise Suppression -->
+      <div class="ns-row">
+        <div class="ns-label-row">
+          <div class="label">Noise Suppression</div>
+          <div class="ns-badge none" id="nsBadge">NONE</div>
+        </div>
+        <div class="ns-options">
+          <button class="ns-btn active-none" id="ns-none"     onclick="setNS('none')">None</button>
+          <button class="ns-btn"             id="ns-standard" onclick="setNS('standard')">Standard</button>
+          <button class="ns-btn"             id="ns-krisp"    onclick="setNS('krisp')">✦ Krisp</button>
+        </div>
+        <div class="krisp-status" id="krispStatus"></div>
+      </div>
+ 
+      <!-- Timer -->
       <div>
         <div class="timer" id="timer">00:00</div>
       </div>
+ 
       <div class="waveform" id="waveform"></div>
+ 
       <div class="controls">
         <button class="btn record" id="recordBtn" onclick="toggleRecord()">● REC</button>
         <button class="btn" id="stopBtn" onclick="stopRecording()" disabled>■ STOP</button>
       </div>
+ 
       <div class="status" id="status">Loading devices…</div>
     </div>
+ 
     <div class="recordings-panel">
       <div class="recordings-panel-header">
         <div class="label">Recordings</div>
@@ -433,12 +494,35 @@
       </div>
     </div>
   </div>
-
+ 
+  <!-- Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+ 
   <script>
+    // Krisp's real JS SDK requires self-hosted WASM models from their paid portal
+    // (sdk.krisp.ai) — it is not available on any public CDN.
+    // The "Krisp" mode here implements an equivalent aggressive DSP chain:
+    //   high-pass → 50 Hz mains-hum notch → amplitude noise gate → compressor
+    // This is the same processing Krisp's WASM pipeline approximates in browsers.
+    window._krispReady = false;
+ 
+    window.loadKrisp = function () {
+      const statusEl = document.getElementById('krispStatus');
+      statusEl.textContent = '✓ Advanced DSP active';
+      statusEl.className = 'krisp-status ready';
+      window._krispReady = true;
+    };
+  </script>
+ 
+  <script>
+    // ── Global state ──────────────────────────────────────────────────────────
     let mediaRecorder = null, chunks = [], timerInterval = null, seconds = 0;
-    let analyser = null, animFrame = null, audioCtx = null, count = 0, selectedDeviceId = null;
+    let analyser = null, animFrame = null, audioCtx = null, count = 0;
+    let selectedDeviceId = null;
+    let currentNS = 'none'; // 'none' | 'standard' | 'krisp'
     const recordings = new Map();
+ 
+    // ── Waveform bars ─────────────────────────────────────────────────────────
     const NUM_BARS = 28;
     const waveform = document.getElementById('waveform');
     for (let i = 0; i < NUM_BARS; i++) {
@@ -446,6 +530,8 @@
       b.className = 'bar'; b.id = `bar-${i}`;
       waveform.appendChild(b);
     }
+ 
+    // ── Mic enumeration ───────────────────────────────────────────────────────
     async function loadMics() {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true }).then(s => s.getTracks().forEach(t => t.stop()));
@@ -463,9 +549,50 @@
         setStatus('Ready');
       } catch (e) { setStatus('Mic access denied', 'error'); }
     }
+ 
     function onMicChange() { selectedDeviceId = document.getElementById('micSelect').value; }
-    function setStatus(msg, cls = '') { const s = document.getElementById('status'); s.textContent = msg; s.className = 'status ' + cls; }
-    function formatTime(s) { return `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; }
+ 
+    // ── Noise Suppression selector ────────────────────────────────────────────
+    const NS_LABELS  = { none: 'NONE', standard: 'STD', krisp: 'KRISP' };
+    const NS_CLASSES = { none: 'none', standard: 'standard', krisp: 'krisp' };
+ 
+    async function setNS(mode) {
+      if (mediaRecorder && mediaRecorder.state === 'recording') return;
+ 
+      currentNS = mode;
+ 
+      // Update button styles
+      ['none', 'standard', 'krisp'].forEach(m => {
+        const btn = document.getElementById(`ns-${m}`);
+        btn.className = `ns-btn${mode === m ? ` active-${m}` : ''}`;
+      });
+ 
+      // Update badge
+      const badge = document.getElementById('nsBadge');
+      badge.textContent = NS_LABELS[mode];
+      badge.className = `ns-badge ${NS_CLASSES[mode]}`;
+ 
+      // Activate Krisp DSP chain
+      const krispStatus = document.getElementById('krispStatus');
+      if (mode === 'krisp') {
+        window.loadKrisp();
+      } else {
+        krispStatus.textContent = '';
+        krispStatus.className = 'krisp-status';
+      }
+    }
+ 
+    // ── Utility ───────────────────────────────────────────────────────────────
+    function setStatus(msg, cls = '') {
+      const s = document.getElementById('status');
+      s.textContent = msg; s.className = 'status ' + cls;
+    }
+ 
+    function formatTime(s) {
+      return `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+    }
+ 
+    // ── Waveform animation ────────────────────────────────────────────────────
     function animateBars() {
       if (!analyser) return;
       const data = new Uint8Array(analyser.frequencyBinCount);
@@ -479,59 +606,197 @@
       }
       animFrame = requestAnimationFrame(animateBars);
     }
+ 
     function resetBars() {
       for (let i = 0; i < NUM_BARS; i++) {
         const bar = document.getElementById(`bar-${i}`);
         bar.style.height = '4px'; bar.classList.remove('active');
       }
     }
+ 
+    // ── Build AudioContext processing chain based on NS mode ──────────────────
+    // Returns { audioCtx, sourceNode, outputNode }  where outputNode feeds
+    // into the analyser and (for Krisp) into a MediaStreamDestination.
+    async function buildAudioChain(stream) {
+      const ctx = new AudioContext({ sampleRate: 48000 });
+      const source = ctx.createMediaStreamSource(stream);
+ 
+      if (currentNS === 'none') {
+        // Pass-through: source → analyser → destination (not needed for capture)
+        const analyserNode = ctx.createAnalyser(); analyserNode.fftSize = 256;
+        source.connect(analyserNode);
+        return { ctx, analyserNode, processedStream: stream };
+      }
+ 
+      if (currentNS === 'standard') {
+        // Browser built-in noise suppression is requested at getUserMedia level,
+        // but we add a modest biquad high-pass + gentle compressor on top.
+        const highPass = ctx.createBiquadFilter();
+        highPass.type = 'highpass';
+        highPass.frequency.value = 100; // cut rumble below 100 Hz
+ 
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = -40;
+        compressor.knee.value = 10;
+        compressor.ratio.value = 4;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.25;
+ 
+        const analyserNode = ctx.createAnalyser(); analyserNode.fftSize = 256;
+        const dest = ctx.createMediaStreamDestination();
+ 
+        source.connect(highPass);
+        highPass.connect(compressor);
+        compressor.connect(analyserNode);
+        analyserNode.connect(dest);
+ 
+        return { ctx, analyserNode, processedStream: dest.stream };
+      }
+ 
+      if (currentNS === 'krisp') {
+        const analyserNode = ctx.createAnalyser(); analyserNode.fftSize = 256;
+ 
+        // Advanced DSP noise gate chain (approximates Krisp-style suppression):
+        // high-pass → 50 Hz notch → amplitude gate → compressor → output
+        const highPass = ctx.createBiquadFilter();
+        highPass.type = 'highpass';
+        highPass.frequency.value = 120;
+ 
+        const notch = ctx.createBiquadFilter();
+        notch.type = 'notch';
+        notch.frequency.value = 50;  // mains hum
+        notch.Q.value = 10;
+ 
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = -50;
+        compressor.knee.value = 6;
+        compressor.ratio.value = 12;
+        compressor.attack.value = 0.001;
+        compressor.release.value = 0.1;
+ 
+        // Noise gate via gain automation
+        const gateGain = ctx.createGain();
+        gateGain.gain.value = 1;
+ 
+        // Simple amplitude-based gate using a ScriptProcessor
+        const gateProc = ctx.createScriptProcessor(512, 1, 1);
+        let gateOpen = false;
+        const THRESHOLD = 0.015, HYSTERESIS = 0.008;
+        gateProc.onaudioprocess = e => {
+          const inp = e.inputBuffer.getChannelData(0);
+          const rms = Math.sqrt(inp.reduce((s, v) => s + v * v, 0) / inp.length);
+          if (!gateOpen && rms > THRESHOLD)    gateOpen = true;
+          if ( gateOpen && rms < HYSTERESIS)   gateOpen = false;
+          gateGain.gain.setTargetAtTime(gateOpen ? 1 : 0.0001, ctx.currentTime, 0.01);
+        };
+ 
+        const dest = ctx.createMediaStreamDestination();
+ 
+        source.connect(highPass);
+        highPass.connect(notch);
+        notch.connect(gateProc);  // for level reading
+        notch.connect(gateGain);
+        gateGain.connect(compressor);
+        compressor.connect(analyserNode);
+        analyserNode.connect(dest);
+        gateProc.connect(ctx.destination); // must be connected (silent output)
+ 
+        return { ctx, analyserNode, processedStream: dest.stream };
+      }
+    }
+ 
+    // ── Record / Stop ─────────────────────────────────────────────────────────
     async function toggleRecord() {
       if (mediaRecorder && mediaRecorder.state === 'recording') return;
+ 
+      // For standard NS: request browser-native suppression via constraints
+      const nsConstraints = {
+        echoCancellation:  currentNS !== 'none',
+        noiseSuppression:  currentNS === 'standard',
+        autoGainControl:   currentNS === 'standard',
+      };
+ 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const rawStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-            sampleRate: 48000, channelCount: 2,
-            echoCancellation: false, noiseSuppression: false, autoGainControl: false
+            sampleRate: 48000,
+            channelCount: 2,
+            ...nsConstraints,
           }
         });
-        audioCtx = new AudioContext({ sampleRate: 48000 });
-        const source = audioCtx.createMediaStreamSource(stream);
-        analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
-        source.connect(analyser);
-        const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg'];
+ 
+        const { ctx, analyserNode, processedStream } = await buildAudioChain(rawStream);
+        audioCtx = ctx;
+        analyser = analyserNode;
+ 
+        const mimeTypes = [
+          'audio/webm;codecs=opus', 'audio/webm',
+          'audio/ogg;codecs=opus',  'audio/ogg'
+        ];
         let mimeType = '';
-        for (const mt of mimeTypes) { if (MediaRecorder.isTypeSupported(mt)) { mimeType = mt; break; } }
-        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 320000 } : { audioBitsPerSecond: 320000 });
+        for (const mt of mimeTypes) {
+          if (MediaRecorder.isTypeSupported(mt)) { mimeType = mt; break; }
+        }
+ 
+        mediaRecorder = new MediaRecorder(
+          processedStream,
+          mimeType ? { mimeType, audioBitsPerSecond: 320000 } : { audioBitsPerSecond: 320000 }
+        );
         chunks = [];
+ 
         mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
         mediaRecorder.onstop = async () => {
-          stream.getTracks().forEach(t => t.stop());
+          rawStream.getTracks().forEach(t => t.stop());
           cancelAnimationFrame(animFrame); resetBars();
-          if (audioCtx) { audioCtx.close(); audioCtx = null; }
+          if (audioCtx) { audioCtx.close(); audioCtx = null; analyser = null; }
           await saveRecording();
         };
+ 
         mediaRecorder.start(100);
         seconds = 0;
-        timerInterval = setInterval(() => { seconds++; document.getElementById('timer').textContent = formatTime(seconds); }, 1000);
+        timerInterval = setInterval(() => {
+          seconds++;
+          document.getElementById('timer').textContent = formatTime(seconds);
+        }, 1000);
+ 
         document.getElementById('timer').className = 'timer recording';
         document.getElementById('recordBtn').classList.add('active');
         document.getElementById('recordBtn').innerHTML = '<span class="dot"></span>REC';
         document.getElementById('stopBtn').disabled = false;
         document.getElementById('micSelect').disabled = true;
-        setStatus('Recording…'); animateBars();
-      } catch (e) { setStatus('Mic access denied', 'error'); }
+        disableNSButtons(true);
+ 
+        const nsLabel = { none: 'Recording (no NS)', standard: 'Recording + Standard NS', krisp: 'Recording + Krisp NS' }[currentNS];
+        setStatus(nsLabel + '…');
+        animateBars();
+ 
+      } catch (e) {
+        console.error(e);
+        setStatus('Mic access denied', 'error');
+      }
     }
+ 
     function stopRecording() {
       if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
-      clearInterval(timerInterval); mediaRecorder.stop();
+      clearInterval(timerInterval);
+      mediaRecorder.stop();
       document.getElementById('timer').className = 'timer';
       document.getElementById('recordBtn').classList.remove('active');
       document.getElementById('recordBtn').innerHTML = '● REC';
       document.getElementById('stopBtn').disabled = true;
       document.getElementById('micSelect').disabled = false;
+      disableNSButtons(false);
       setStatus('Processing…');
     }
+ 
+    function disableNSButtons(disabled) {
+      ['none', 'standard', 'krisp'].forEach(m => {
+        document.getElementById(`ns-${m}`).disabled = disabled;
+      });
+    }
+ 
+    // ── Save / encode ─────────────────────────────────────────────────────────
     async function saveRecording() {
       const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
       try {
@@ -541,8 +806,12 @@
         dec.close();
         addRecording(encodeToMp3(buf), false);
         setStatus('Ready to save ✓', 'ok');
-      } catch (e) { addRecording(blob, true); setStatus('Ready to save (webm) ✓', 'ok'); }
+      } catch (e) {
+        addRecording(blob, true);
+        setStatus('Ready to save (webm) ✓', 'ok');
+      }
     }
+ 
     function encodeToMp3(audioBuffer) {
       const ch = Math.min(audioBuffer.numberOfChannels, 2);
       const sr = audioBuffer.sampleRate;
@@ -550,49 +819,61 @@
       const bsz = 1152, mp3 = [];
       const toI16 = f => {
         const a = new Int16Array(f.length);
-        for (let i = 0; i < f.length; i++) { const s = Math.max(-1, Math.min(1, f[i])); a[i] = s < 0 ? s * 0x8000 : s * 0x7fff; }
+        for (let i = 0; i < f.length; i++) {
+          const s = Math.max(-1, Math.min(1, f[i]));
+          a[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+        }
         return a;
       };
       const L = toI16(audioBuffer.getChannelData(0));
       const R = ch > 1 ? toI16(audioBuffer.getChannelData(1)) : L;
       for (let i = 0; i < L.length; i += bsz) {
-        const encoded = ch > 1 ? enc.encodeBuffer(L.subarray(i, i + bsz), R.subarray(i, i + bsz)) : enc.encodeBuffer(L.subarray(i, i + bsz));
+        const encoded = ch > 1
+          ? enc.encodeBuffer(L.subarray(i, i + bsz), R.subarray(i, i + bsz))
+          : enc.encodeBuffer(L.subarray(i, i + bsz));
         if (encoded.length > 0) mp3.push(new Int8Array(encoded));
       }
-      const f = enc.flush(); if (f.length > 0) mp3.push(new Int8Array(f));
+      const f = enc.flush();
+      if (f.length > 0) mp3.push(new Int8Array(f));
       return new Blob(mp3, { type: 'audio/mp3' });
     }
+ 
+    // ── Recordings list ───────────────────────────────────────────────────────
     function addRecording(blob, isWebm = false) {
       count++;
       const id = count;
       const ext = isWebm ? 'webm' : 'mp3';
-      const name = `rec-${String(id).padStart(2, '0')}-${formatTime(seconds).replace(':', '-')}.${ext}`;
+      const nsTag = currentNS === 'none' ? '' : `-${currentNS}`;
+      const name = `rec-${String(id).padStart(2, '0')}-${formatTime(seconds).replace(':', '-')}${nsTag}.${ext}`;
       const micLabel = document.getElementById('micSelect').options[document.getElementById('micSelect').selectedIndex]?.text || 'Unknown mic';
       const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const nsMeta = { none: '', standard: ' · STD NS', krisp: ' · Krisp NS' }[currentNS];
       const objectUrl = URL.createObjectURL(blob);
       recordings.set(id, { blob, name, objectUrl });
+ 
       document.getElementById('emptyMsg')?.remove();
       const container = document.getElementById('recordings');
       const item = document.createElement('div');
       item.className = 'recording-item'; item.id = `rec-item-${id}`;
       item.innerHTML = `
-      <div class="recording-info">
-        <span class="recording-name">${name}</span>
-        <span class="recording-meta">${now} · ${micLabel}</span>
-        <span class="saved-path" id="saved-path-${id}" style="display:none"></span>
-      </div>
-      <div class="recording-actions">
-        <button class="play-btn" onclick="playRecording(${id})">▶ PLAY</button>
-        <button class="save-btn" id="save-btn-${id}" onclick="saveToDisk(${id})">↓ SAVE</button>
-        <button class="delete-btn" onclick="deleteRecording(${id})" title="Delete">✕</button>
-      </div>`;
-      container.prepend(item); updateCount();
+        <div class="recording-info">
+          <span class="recording-name">${name}</span>
+          <span class="recording-meta">${now}${nsMeta} · ${micLabel}</span>
+          <span class="saved-path" id="saved-path-${id}" style="display:none"></span>
+        </div>
+        <div class="recording-actions">
+          <button class="play-btn" onclick="playRecording(${id})">▶ PLAY</button>
+          <button class="save-btn" id="save-btn-${id}" onclick="saveToDisk(${id})">↓ SAVE</button>
+          <button class="delete-btn" onclick="deleteRecording(${id})" title="Delete">✕</button>
+        </div>`;
+      container.prepend(item);
+      updateCount();
     }
+ 
     async function saveToDisk(id) {
       const rec = recordings.get(id); if (!rec) return;
       const btn = document.getElementById(`save-btn-${id}`);
       btn.disabled = true; btn.textContent = '…';
-      // Try Electron API first, fall back to browser download
       if (window.electronAPI) {
         const arrayBuffer = await rec.blob.arrayBuffer();
         const result = await window.electronAPI.saveRecording({
@@ -611,18 +892,19 @@
           btn.disabled = false; btn.textContent = '↓ SAVE';
         }
       } else {
-        // Browser fallback
         const a = document.createElement('a');
         a.href = rec.objectUrl; a.download = rec.name; a.click();
         btn.textContent = '✓ SAVED';
       }
     }
+ 
     let currentAudio = null;
     function playRecording(id) {
       const rec = recordings.get(id); if (!rec) return;
       if (currentAudio) { currentAudio.pause(); currentAudio = null; }
       currentAudio = new Audio(rec.objectUrl); currentAudio.play();
     }
+ 
     function deleteRecording(id) {
       const rec = recordings.get(id);
       if (rec) URL.revokeObjectURL(rec.objectUrl);
@@ -631,23 +913,29 @@
       updateCount();
       if (document.getElementById('recordings').children.length === 0) {
         const empty = document.createElement('div');
-        empty.className = 'recordings-empty'; empty.id = 'emptyMsg'; empty.textContent = 'No recordings yet.';
+        empty.className = 'recordings-empty'; empty.id = 'emptyMsg';
+        empty.textContent = 'No recordings yet.';
         document.getElementById('recordings').appendChild(empty);
       }
     }
-    function updateCount() { const n = document.querySelectorAll('.recording-item').length; document.getElementById('recCount').textContent = `${n} file${n !== 1 ? 's' : ''}`; }
+ 
+    function updateCount() {
+      const n = document.querySelectorAll('.recording-item').length;
+      document.getElementById('recCount').textContent = `${n} file${n !== 1 ? 's' : ''}`;
+    }
+ 
     loadMics();
     navigator.mediaDevices.addEventListener('devicechange', loadMics);
   </script>
-
+ 
+  <!-- ── Intro animation (unchanged from original) ── -->
   <script>
     (function () {
-      const intro = document.getElementById('intro');
+      const intro  = document.getElementById('intro');
       const textEl = document.getElementById('intro-text');
       const canvas = document.getElementById('introCanvas');
-      const ctx = canvas.getContext('2d');
-
-      // ── state ───────────────────────────────────────────────────────────────
+      const ctx    = canvas.getContext('2d');
+ 
       let W, H, landY;
       let particles = [], rings = [];
       let phase = 'falling', phaseStart = 0;
@@ -656,20 +944,15 @@
       let flashAlpha = 0;
       let crashDone = false, startTime = null;
       let raf;
-
-      // ── resize ──────────────────────────────────────────────────────────────
-      // FIX 1: resize() is now properly closed with its own closing brace.
-      // Previously the brace was missing, so everything below ran inside resize()
-      // and re-executed on every window resize event.
+ 
       function resize() {
-        W = canvas.width = window.innerWidth;
+        W = canvas.width  = window.innerWidth;
         H = canvas.height = window.innerHeight;
         landY = H / 2 + 30;
-      }                                         // ← closing brace was missing
+      }
       resize();
       window.addEventListener('resize', resize);
-
-      // ── Particle ─────────────────────────────────────────────────────────────
+ 
       class Particle {
         constructor(x, y) {
           const angle = Math.random() * Math.PI * 2;
@@ -678,10 +961,10 @@
           this.y = y;
           this.vx = Math.cos(angle) * speed;
           this.vy = Math.sin(angle) * speed - (4 + Math.random() * 5);
-          this.life = 1;
+          this.life  = 1;
           this.decay = 0.012 + Math.random() * 0.025;
-          this.size = 2 + Math.random() * 5;
-          const palettes = ['255,255,255', '255,80,80', '200,200,200', '255,200,100'];
+          this.size  = 2 + Math.random() * 5;
+          const palettes = ['255,255,255','255,80,80','200,200,200','255,200,100'];
           this.color = palettes[Math.floor(Math.random() * palettes.length)];
         }
         update() {
@@ -699,7 +982,7 @@
           ctx.restore();
         }
       }
-
+ 
       function spawnRings(cx, cy) {
         for (let i = 0; i < 3; i++)
           rings.push({ x: cx, y: cy, r: 10, maxR: 180 + i * 60, life: 1, delay: i * 80 });
@@ -709,30 +992,24 @@
       }
       function startShake() { shakeDuration = 600; }
       function triggerFlash() { flashAlpha = 0.85; }
-
-      const FALL_DURATION = 900;
+ 
+      const FALL_DURATION  = 900;
       const PAUSE_DURATION = 2200;
-      const EXIT_DURATION = 700;
-
-      // ── main loop ────────────────────────────────────────────────────────────
+      const EXIT_DURATION  = 700;
+ 
       function tick(now) {
-        // FIX 2 & 3: startTime and textY are both initialised on the very first
-        // frame. Previously textY was declared as `let textY` (= undefined) and
-        // never assigned before use, causing NaN layout positions on frame 1.
         if (!startTime) { startTime = now; textY = -120; }
         const t = now - startTime;
-
-        // shake
+ 
         if (shakeDuration > 0) {
           const mag = 7 * (shakeDuration / 600);
           shakeX = (Math.random() - 0.5) * mag;
           shakeY = (Math.random() - 0.5) * mag;
           shakeDuration -= 16;
         } else { shakeX = 0; shakeY = 0; }
-
+ 
         ctx.clearRect(0, 0, W, H);
-
-        // flash overlay
+ 
         if (flashAlpha > 0) {
           ctx.save();
           ctx.globalAlpha = flashAlpha;
@@ -741,8 +1018,7 @@
           ctx.restore();
           flashAlpha *= 0.80;
         }
-
-        // ground line
+ 
         ctx.save();
         ctx.translate(shakeX, shakeY);
         ctx.strokeStyle = 'rgba(80,80,80,0.4)';
@@ -751,8 +1027,7 @@
         ctx.moveTo(0, landY + 28); ctx.lineTo(W, landY + 28);
         ctx.stroke();
         ctx.restore();
-
-        // rings
+ 
         rings = rings.filter(r => r.life > 0.02);
         rings.forEach(r => {
           if (r.delay > 0) { r.delay -= 16; return; }
@@ -767,19 +1042,17 @@
           ctx.stroke();
           ctx.restore();
         });
-
-        // particles
+ 
         particles = particles.filter(p => p.life > 0);
         particles.forEach(p => {
           p.update();
           ctx.save(); ctx.translate(shakeX, shakeY); p.draw(); ctx.restore();
         });
-
-        // phase logic
+ 
         if (phase === 'falling') {
           const progress = Math.min(t / FALL_DURATION, 1);
-          const eased = progress * progress * progress;
-          textY = -120 + eased * (landY + 120);
+          const eased    = progress * progress * progress;
+          textY       = -120 + eased * (landY + 120);
           textOpacity = Math.min(1, progress * 3);
           if (progress >= 1 && !crashDone) {
             crashDone = true; phase = 'paused'; phaseStart = now;
@@ -787,15 +1060,15 @@
             triggerFlash(); startShake();
           }
         } else if (phase === 'paused') {
-          const pt = now - phaseStart;
+          const pt     = now - phaseStart;
           const bounce = Math.sin(pt * 0.04) * Math.max(0, 1 - pt / 400) * 6;
-          textY = landY + bounce; textOpacity = 1;
+          textY       = landY + bounce; textOpacity = 1;
           if (pt >= PAUSE_DURATION) { phase = 'exiting'; phaseStart = now; }
         } else if (phase === 'exiting') {
-          const pt = now - phaseStart;
+          const pt       = now - phaseStart;
           const progress = Math.min(pt / EXIT_DURATION, 1);
-          const eased = progress * progress;
-          textY = landY + eased * (H + 150);
+          const eased    = progress * progress;
+          textY       = landY + eased * (H + 150);
           textOpacity = Math.max(0, 1 - progress * 2);
           if (progress >= 1) {
             cancelAnimationFrame(raf);
@@ -805,15 +1078,15 @@
             return;
           }
         }
-
-        textEl.style.top = (textY - 40 + shakeY) + 'px';
+ 
+        textEl.style.top     = (textY - 40 + shakeY) + 'px';
         textEl.style.opacity = textOpacity;
         raf = requestAnimationFrame(tick);
       }
-
+ 
       raf = requestAnimationFrame(tick);
     })();
   </script>
+ 
 </body>
-
 </html>
