@@ -37,15 +37,6 @@ The portable `.exe` appears in `dist/` — just double-click it, no installation
 
 ---
 
-## Features
-
-- 🎙️ Microphone selection (all system mics detected)
-- 🔴 Live recording with waveform visualizer
-- 🎵 MP3 encoding at 320kbps (falls back to WebM if needed)
-- ▶️ In-app playback before saving
-- 💾 Native Windows Save dialog — choose exactly where files are saved
-- 📂 Click saved path to reveal in Explorer
-
 ## Notes
 
 - The app requests microphone access on first launch — click **Allow** when Windows prompts
